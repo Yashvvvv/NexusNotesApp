@@ -6,7 +6,8 @@ data class NoteDto(
     val id: String? = null,
     val title: String,
     val content: String,
-    val createdAt: Instant? = null
+    val color: Long,
+    val createAt: String? = null
 )
 
 data class NoteRequest(

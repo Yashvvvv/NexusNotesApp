@@ -3,8 +3,8 @@ package com.example.authproject.frontend.ui.screens.notes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.authproject.frontend.data.local.datastore.TokenManager
-import com.example.authproject.frontend.data.repository.NoteRepositoryImpl
 import com.example.authproject.frontend.domain.model.Note
+import com.example.authproject.frontend.domain.repository.NoteRepository
 import com.example.authproject.frontend.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,17 +18,18 @@ import javax.inject.Inject
 data class NotesState(
     val notes: List<Note> = emptyList(),
     val isLoading: Boolean = false,
-    val error: String? = null
+    val error: String? = null,
+    val data: List<Note>? = null,
 )
 
 @HiltViewModel
 class NotesViewModel @Inject constructor(
-    private val noteRepository: NoteRepositoryImpl, // Use Impl to access sync
+    private val noteRepository: NoteRepository,
     private val tokenManager: TokenManager
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(NotesState())
-    val state = _state.asStateFlow()
+    val state: StateFlow<NotesState> = _state.asStateFlow()
 
     private val _createNoteState = MutableStateFlow<Resource<Unit>?>(null)
     val createNoteState: StateFlow<Resource<Unit>?> = _createNoteState
@@ -37,37 +38,30 @@ class NotesViewModel @Inject constructor(
         getNotes()
     }
 
-    fun getNotes() {
-        viewModelScope.launch {
-            noteRepository.syncNotes()
-        }
+    private fun getNotes() {
         noteRepository.getNotes().onEach { result ->
-            when (result) {
+            _state.value = when (result) {
                 is Resource.Success -> {
-                    _state.value = state.value.copy(
+                    state.value.copy(
                         notes = result.data ?: emptyList(),
                         isLoading = false
                     )
                 }
                 is Resource.Error -> {
-                    _state.value = state.value.copy(
+                    state.value.copy(
                         error = result.message,
-                        isLoading = false
+                        isLoading = false,
+                        notes = result.data ?: emptyList()
                     )
                 }
                 is Resource.Loading -> {
-                    _state.value = state.value.copy(
-                        isLoading = true
+                    state.value.copy(
+                        isLoading = true,
+                        notes = result.data ?: emptyList()
                     )
                 }
             }
         }.launchIn(viewModelScope)
-    }
-
-    fun syncNotes() {
-        viewModelScope.launch {
-            noteRepository.syncNotes()
-        }
     }
 
     fun logout() {
@@ -81,13 +75,19 @@ class NotesViewModel @Inject constructor(
             _createNoteState.value = Resource.Loading()
             val result = noteRepository.createNote(title, content)
             _createNoteState.value = result
-            if(result is Resource.Success){
-                noteRepository.syncNotes()
-            }
+        }
+    }
+
+    fun deleteNote(noteId: String) {
+        viewModelScope.launch {
+            noteRepository.deleteNote(noteId)
         }
     }
 
     fun onLogout(onLoggedOut: () -> Unit) {
-        // ... existing code ...
+        viewModelScope.launch {
+            tokenManager.clearTokens()
+            onLoggedOut()
+        }
     }
 } 

@@ -7,7 +7,7 @@ import com.example.authproject.frontend.data.local.dao.NoteDao
 
 @Database(
     entities = [NoteEntity::class],
-    version = 1
+    version = 2
 )
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {

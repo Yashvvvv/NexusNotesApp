@@ -8,3 +8,4 @@ interface AuthRepository {
     suspend fun login(email: String, password: String): Resource<TokenPair>
     suspend fun refreshToken(token: String): Resource<TokenPair>
 }
+ 

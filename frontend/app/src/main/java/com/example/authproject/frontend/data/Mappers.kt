@@ -10,7 +10,8 @@ fun NoteDto.toNoteEntity(): NoteEntity {
         id = this.id!!,
         title = this.title,
         content = this.content,
-        createdAt = this.createdAt ?: Instant.now()
+        color = this.color,
+        createdAt = this.createAt?.let { Instant.parse(it) } ?: Instant.now()
     )
 }
 
@@ -19,6 +20,7 @@ fun NoteEntity.toNote(): Note {
         id = this.id,
         title = this.title,
         content = this.content,
+        color = this.color,
         createdAt = this.createdAt
     )
 }

@@ -11,14 +11,11 @@ import retrofit2.http.Path
 interface NoteApiService {
 
     @POST("/notes")
-    suspend fun saveNote(@Body note: NoteRequest): NoteDto
+    suspend fun createNote(@Body note: NoteRequest): NoteDto
 
     @GET("/notes")
     suspend fun getNotes(): List<NoteDto>
 
     @DELETE("/notes/{id}")
     suspend fun deleteNote(@Path("id") id: String)
-
-    @POST("notes")
-    suspend fun createNote(@Body note: NoteDto)
 }

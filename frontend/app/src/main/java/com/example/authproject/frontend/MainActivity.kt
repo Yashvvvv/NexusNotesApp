@@ -61,11 +61,11 @@ class MainActivity : ComponentActivity() {
                                         popUpTo("notes") { inclusive = true }
                                     }
                                 }
-                            )
-                        }
-                    }
+                    )
                 }
             }
         }
+    }
+}
     }
 }
